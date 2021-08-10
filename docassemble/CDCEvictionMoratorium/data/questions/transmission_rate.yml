@@ -1,0 +1,64 @@
+include:
+  - docassemble.AssemblyLine:al_package.yml
+---
+objects:
+  - address: Address
+  - transmissions: DAWeb.using(base_url="https://covid.cdc.gov/covid-data-tracker/COVIDData")
+  # Happens to be the most recent data I found for fips data, though there might be more recent stuff somewhere
+  - fips: DAWeb.using(base_url="https://api.census.gov/data/2020/dec")
+---
+mandatory: True
+code: |
+  address.address
+  address.geocode()
+  result
+---
+code: |
+  fips_data = fips.get("responserate", data={"get":"NAME","for":"county:*"})
+  full_state_name = states_list()[ address.state ]
+  county_fips_data = []
+  for county in fips_data:
+    log(f'{ address.county }, { address.state }', 'console')
+    if county[0] == f'{ address.county }, { full_state_name }':
+      county_fips_data = county
+  fips = f'{ county_fips_data[1] }{ county_fips_data[2] }'
+---
+code: |
+  req_data = f'integrated_county_timeseries_fips_{ fips }_external'
+  trans_data = transmissions.get("getAjaxData", data={"id":req_data})
+  # apparently can't count on data to be in chronological order. Tried it with fips 25025 and last item was in 2020. Most recent item was further up in the list.
+  county_rate = trans_data["integrated_county_timeseries_external_data"][-20]["community_transmission_level"]
+---
+id: address
+question: |
+  Address
+fields:
+  - Address: address.address
+    address autocomplete: True
+    required: False
+  - Suite: address.unit
+    required: False
+  - City: address.city
+    required: False
+  - State: address.state
+    required: False
+  - Postal code: address.zip    
+    required: False
+---
+id: result
+event: result
+question: |
+  Transmission rate: 
+subquestion: |
+  The CDC data does not handle Territories
+
+  Your county is **${ address.county }** in the state of **${ address.state }**.
+  
+  ${ full_state_name }
+  
+  ${ fips }
+  
+  ${ trans_data["integrated_county_timeseries_external_data"][-20] }
+  
+  ${ county_rate }
+---
