@@ -53,7 +53,7 @@ setup(name='docassemble.CDCEvictionMoratorium',
       url='https://docassemble.org',
       packages=find_packages(),
       namespace_packages=['docassemble'],
-      install_requires=['docassemble.AssemblyLine>=2.2.0', 'docassemble.LanguagePack>=0.0.2'],
+      install_requires=['docassemble.AssemblyLine>=2.2.1', 'docassemble.LanguagePack>=0.0.2'],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/CDCEvictionMoratorium/', package='docassemble.CDCEvictionMoratorium'),
      )
